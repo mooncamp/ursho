@@ -4,7 +4,9 @@
     "port": "8080"
   },
   "options": {
-    "prefix": "http://localhost:8080/"
+    "prefix": "http://localhost:8080/",
+    "database": "dgraph",
+    "encoding": "aes"
   },
   "redis": {},
   "files_system": {
@@ -16,5 +18,13 @@
     "user": "ursho_db",
     "password": "mypass",
     "db": "ursho_db"
+  },
+  "dgraph": {
+    "host": "localhost",
+    "port": "9080"
+  },
+  "crypto": {
+    "key": "6368616e676520746869732070617373776f726420746f206120736563726574",
+    "nonce": "64a9433eae7ccceee2fc0eda"
   }
 }

@@ -61,7 +61,7 @@ func (h handler) encode(w io.Writer, r *http.Request) (interface{}, int, error) 
 	if url == "" {
 		return nil, http.StatusBadRequest, fmt.Errorf("URL is empty")
 	}
-		
+
 	if !strings.Contains(url, "http") {
 		url = "http://" + url
 	}
@@ -98,6 +98,16 @@ func (h handler) redirect(w http.ResponseWriter, r *http.Request) {
 
 	url, err := h.storage.Load(code)
 	if err != nil {
+		log.Println("load", err)
+
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("URL Not Found"))
+		return
+	}
+
+	if url == "" {
+		log.Println("empty url")
+
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte("URL Not Found"))
 		return
