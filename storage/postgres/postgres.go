@@ -7,12 +7,12 @@ import (
 	// This loads the postgres drivers.
 	_ "github.com/lib/pq"
 
-	"github.com/douglasmakey/ursho/base62"
+	"github.com/douglasmakey/ursho/encoding"
 	"github.com/douglasmakey/ursho/storage"
 )
 
 // New returns a postgres backed storage service.
-func New(host, port, user, password, dbName string) (storage.Service, error) {
+func New(host, port, user, password, dbName string, coder encoding.Coder) (storage.Service, error) {
 	// Connect postgres
 	connect := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbName)
@@ -36,10 +36,13 @@ func New(host, port, user, password, dbName string) (storage.Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &postgres{db}, nil
+	return &postgres{db, coder}, nil
 }
 
-type postgres struct{ db *sql.DB }
+type postgres struct {
+	db    *sql.DB
+	Coder encoding.Coder
+}
 
 func (p *postgres) Save(url string) (string, error) {
 	var id int64
@@ -47,11 +50,11 @@ func (p *postgres) Save(url string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return base62.Encode(id), nil
+	return p.Coder.Encode(id), nil
 }
 
 func (p *postgres) Load(code string) (string, error) {
-	id, err := base62.Decode(code)
+	id, err := p.Coder.Decode(code)
 	if err != nil {
 		return "", err
 	}
@@ -65,7 +68,7 @@ func (p *postgres) Load(code string) (string, error) {
 }
 
 func (p *postgres) LoadInfo(code string) (*storage.Item, error) {
-	id, err := base62.Decode(code)
+	id, err := p.Coder.Decode(code)
 	if err != nil {
 		return nil, err
 	}

@@ -23,8 +23,18 @@ type Config struct {
 		Password string `json:"password"`
 		DB       string `json:"db"`
 	} `json:"postgres"`
+	Dgraph struct {
+		Host string `json:"host"`
+		Port string `json:"port"`
+	}
+	Crypto struct {
+		Key   string `json:"key"`
+		Nonce string `json:"nonce"`
+	}
 	Options struct {
-		Prefix string `json:"prefix"`
+		Prefix   string `json:"prefix"`
+		Database string `json:"database"`
+		Encoding string `json:"encoding"`
 	} `json:"options"`
 }
 

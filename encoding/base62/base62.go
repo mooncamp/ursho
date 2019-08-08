@@ -3,6 +3,8 @@ package base62
 import (
 	"fmt"
 	"strings"
+
+	"github.com/douglasmakey/ursho/encoding"
 )
 
 // All characters
@@ -11,8 +13,14 @@ const (
 	length   = int64(len(alphabet))
 )
 
+func New() encoding.Coder {
+	return &coder{}
+}
+
+type coder struct{}
+
 // Encode number to base62.
-func Encode(n int64) string {
+func (*coder) Encode(n int64) string {
 	if n == 0 {
 		return string(alphabet[0])
 	}
@@ -25,7 +33,7 @@ func Encode(n int64) string {
 }
 
 // Decode converts a base62 token to int.
-func Decode(key string) (int64, error) {
+func (*coder) Decode(key string) (int64, error) {
 	var n int64
 	for _, c := range []byte(key) {
 		i := strings.IndexByte(alphabet, c)

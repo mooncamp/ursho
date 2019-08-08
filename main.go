@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/hex"
 	"flag"
 	"fmt"
 	"log"
@@ -11,7 +12,12 @@ import (
 	"syscall"
 
 	"github.com/douglasmakey/ursho/config"
+	"github.com/douglasmakey/ursho/encoding"
+	"github.com/douglasmakey/ursho/encoding/aes"
+	"github.com/douglasmakey/ursho/encoding/base62"
 	"github.com/douglasmakey/ursho/handler"
+	"github.com/douglasmakey/ursho/storage"
+	"github.com/douglasmakey/ursho/storage/dgraph"
 	"github.com/douglasmakey/ursho/storage/postgres"
 )
 
@@ -26,11 +32,48 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Set use storage, select [Postgres, Filesystem, Redis ...]
-	svc, err := postgres.New(config.Postgres.Host, config.Postgres.Port, config.Postgres.User, config.Postgres.Password, config.Postgres.DB)
-	if err != nil {
-		log.Fatal(err)
+	var svc storage.Service
+	var coder encoding.Coder
+
+	switch config.Options.Encoding {
+	case "aes":
+		key, err := hex.DecodeString(config.Crypto.Key)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		nonce, err := hex.DecodeString(config.Crypto.Nonce)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		c, err := aes.New(key, nonce)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		coder = c
+	default:
+		coder = base62.New()
 	}
+
+	switch config.Options.Database {
+	case "dgraph":
+		s, err := dgraph.New(config.Dgraph.Host, config.Dgraph.Port, coder)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		svc = s
+	default:
+		// Set use storage, select [Postgres, Filesystem, Redis ...]
+		s, err := postgres.New(config.Postgres.Host, config.Postgres.Port, config.Postgres.User, config.Postgres.Password, config.Postgres.DB, coder)
+		if err != nil {
+			log.Fatal(err)
+		}
+		svc = s
+	}
+
 	defer svc.Close()
 
 	// Create a server
