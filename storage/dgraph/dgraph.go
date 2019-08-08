@@ -118,6 +118,9 @@ func (d *dgraph) loadInfo(txn *dgo.Txn, code string) (dgraphItem, error) {
 	}
 
 	query, err := render.Render(render.Query{Queries: []gql.GraphQuery{q}})
+	if err != nil {
+		return dgraphItem{}, err
+	}
 
 	resp, err := txn.Query(context.Background(), query)
 	if err != nil {

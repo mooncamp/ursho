@@ -10,7 +10,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/douglasmakey/ursho/aes"
+	"github.com/douglasmakey/ursho/encoding/aes"
 	"github.com/douglasmakey/ursho/storage/dgraph"
 )
 

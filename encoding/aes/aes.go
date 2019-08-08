@@ -43,5 +43,8 @@ func (c *coder) Decode(in string) (int64, error) {
 	}
 
 	plaintext, err := c.AEAD.Open(nil, c.nonce, ciphertext, nil)
+	if err != nil {
+		return 0, err
+	}
 	return strconv.ParseInt(string(plaintext), 16, 64)
 }
