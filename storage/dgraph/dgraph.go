@@ -38,9 +38,9 @@ type dgraph struct {
 }
 
 type dgraphItem struct {
-	ID         string    `json:"uid"`
-	CreatedAt  time.Time `json:"ursho.createdAt,omitempty"`
-	ModifiedAt time.Time `json:"ursho.modifiedAt,omitempty"`
+	ID         string     `json:"uid"`
+	CreatedAt  *time.Time `json:"ursho.createdAt,omitempty"`
+	ModifiedAt *time.Time `json:"ursho.modifiedAt,omitempty"`
 
 	URL     string `json:"ursho.url,omitempty"`
 	Visited bool   `json:"ursho.visited,omitempty"`
@@ -48,16 +48,17 @@ type dgraphItem struct {
 }
 
 func (d *dgraph) Save(url string) (string, error) {
+	now := time.Now()
 	item := dgraphItem{
-		CreatedAt:  time.Now(),
-		ModifiedAt: time.Now(),
+		CreatedAt:  &now,
+		ModifiedAt: &now,
 
 		URL:     url,
 		Visited: false,
 		Count:   0,
 	}
 
-	js, err := json.MarshalIndent(item, "", " ")
+	js, err := json.Marshal(item)
 	if err != nil {
 		return "", nil
 	}
@@ -84,7 +85,8 @@ func (d *dgraph) Load(code string) (string, error) {
 		return "", err
 	}
 
-	js, err := json.Marshal(dgraphItem{ID: item.ID, Visited: true, Count: item.Count + 1, ModifiedAt: time.Now()})
+	now := time.Now()
+	js, err := json.Marshal(dgraphItem{ID: item.ID, Visited: true, Count: item.Count + 1, ModifiedAt: &now})
 	if err != nil {
 		return "", err
 	}
