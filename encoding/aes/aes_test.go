@@ -6,15 +6,17 @@ import (
 )
 
 func Test_it_encodes_and_decodes(t *testing.T) {
-	nonce, _ := hex.DecodeString("64a9433eae7ccceee2fc0eda")
 	key, _ := hex.DecodeString("6368616e676520746869732070617373776f726420746f206120736563726574")
-	coder, err := New(key, nonce)
+	coder, err := New(key)
 	if err != nil {
 		t.Fatalf("new coder: %v", err)
 	}
 
 	expected := int64(392048493)
-	c := coder.Encode(expected)
+	c, err := coder.Encode(expected)
+	if err != nil {
+		t.Fatalf("encode: %v", err)
+	}
 	plain, err := coder.Decode(c)
 	if err != nil {
 		t.Fatalf("decode: %v", err)

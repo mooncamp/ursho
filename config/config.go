@@ -28,8 +28,7 @@ type Config struct {
 		Port string `json:"port"`
 	}
 	Crypto struct {
-		Key   string `json:"key"`
-		Nonce string `json:"nonce"`
+		Key string `json:"key"`
 	}
 	Options struct {
 		Prefix   string `json:"prefix"`

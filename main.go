@@ -42,12 +42,7 @@ func main() {
 			log.Fatal(err)
 		}
 
-		nonce, err := hex.DecodeString(config.Crypto.Nonce)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		c, err := aes.New(key, nonce)
+		c, err := aes.New(key)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -50,7 +50,7 @@ func (p *postgres) Save(url string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return p.Coder.Encode(id), nil
+	return p.Coder.Encode(id)
 }
 
 func (p *postgres) Load(code string) (string, error) {

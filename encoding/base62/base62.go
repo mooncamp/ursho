@@ -20,16 +20,16 @@ func New() encoding.Coder {
 type coder struct{}
 
 // Encode number to base62.
-func (*coder) Encode(n int64) string {
+func (*coder) Encode(n int64) (string, error) {
 	if n == 0 {
-		return string(alphabet[0])
+		return string(alphabet[0]), nil
 	}
 
 	s := ""
 	for ; n > 0; n = n / length {
 		s = string(alphabet[n%length]) + s
 	}
-	return s
+	return s, nil
 }
 
 // Decode converts a base62 token to int.

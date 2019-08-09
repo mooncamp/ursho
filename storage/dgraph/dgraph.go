@@ -73,7 +73,7 @@ func (d *dgraph) Save(url string) (string, error) {
 		return "", nil
 	}
 
-	return d.Coder.Encode(id), nil
+	return d.Coder.Encode(id)
 }
 
 func (d *dgraph) Load(code string) (string, error) {
