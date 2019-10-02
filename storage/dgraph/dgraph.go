@@ -10,8 +10,8 @@ import (
 	"github.com/douglasmakey/ursho/encoding"
 	"github.com/douglasmakey/ursho/storage"
 
-	"github.com/dgraph-io/dgo"
-	"github.com/dgraph-io/dgo/protos/api"
+	"github.com/dgraph-io/dgo/v2"
+	"github.com/dgraph-io/dgo/v2/protos/api"
 	"google.golang.org/grpc"
 	"mooncamp.com/dgx/gql"
 	"mooncamp.com/dgx/render"
@@ -23,6 +23,20 @@ func New(host, port string, coder encoding.Coder) (storage.Service, error) {
 		return nil, err
 	}
 	dg := dgo.NewDgraphClient(api.NewDgraphClient(conn))
+
+	schema := `
+type ursho {
+  ursho.createdAt:dateTime
+  ursho.modifiedAt:dateTime
+  ursho.url:string
+  ursho.visited:bool
+  ursho.count:int
+}
+`
+
+	if err := dg.Alter(context.Background(), &api.Operation{Schema: schema}); err != nil {
+		return nil, err
+	}
 
 	return &dgraph{
 		ClientConn: conn,
@@ -45,17 +59,23 @@ type dgraphItem struct {
 	URL     string `json:"ursho.url,omitempty"`
 	Visited bool   `json:"ursho.visited,omitempty"`
 	Count   int    `json:"ursho.count,omitempty"`
+
+	Type string `json:"dgraph.type"`
 }
 
 func (d *dgraph) Save(url string) (string, error) {
 	now := time.Now()
 	item := dgraphItem{
+		ID: "_:blank-0",
+
 		CreatedAt:  &now,
 		ModifiedAt: &now,
 
 		URL:     url,
 		Visited: false,
 		Count:   0,
+
+		Type: "ursho",
 	}
 
 	js, err := json.Marshal(item)
@@ -86,7 +106,7 @@ func (d *dgraph) Load(code string) (string, error) {
 	}
 
 	now := time.Now()
-	js, err := json.Marshal(dgraphItem{ID: item.ID, Visited: true, Count: item.Count + 1, ModifiedAt: &now})
+	js, err := json.Marshal(dgraphItem{ID: item.ID, Visited: true, Count: item.Count + 1, ModifiedAt: &now, Type: "ursho"})
 	if err != nil {
 		return "", err
 	}
