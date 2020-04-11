@@ -13,8 +13,6 @@ import (
 	"github.com/dgraph-io/dgo/v2"
 	"github.com/dgraph-io/dgo/v2/protos/api"
 	"google.golang.org/grpc"
-	"mooncamp.com/dgx/gql"
-	"mooncamp.com/dgx/render"
 )
 
 func New(host, port string, coder encoding.Coder) (storage.Service, error) {
@@ -32,6 +30,12 @@ type ursho {
   ursho.visited:bool
   ursho.count:int
 }
+
+ursho.createdAt: dateTime .
+ursho.modifiedAt: dateTime .
+ursho.url: string .
+ursho.visited: bool .
+ursho.count: int .
 `
 
 	if err := dg.Alter(context.Background(), &api.Operation{Schema: schema}); err != nil {
@@ -125,24 +129,18 @@ func (d *dgraph) loadInfo(txn *dgo.Txn, code string) (dgraphItem, error) {
 		return dgraphItem{}, err
 	}
 
-	q := gql.GraphQuery{
-		Alias: "items",
-		UID:   []uint64{uint64(id)},
-		Func:  &gql.Function{Name: "uid"},
-		Children: []gql.GraphQuery{
-			{Attr: "uid"},
-			{Attr: "ursho.url"},
-			{Attr: "ursho.count"},
-			{Attr: "ursho.visited"},
-		},
-	}
+	query := `
+query {
+  items(func: uid(%d)) {
+    uid
+    ursho.url
+    ursho.count
+    ursho.visited
+  }
+}
+`
 
-	query, err := render.Render(render.Query{Queries: []gql.GraphQuery{q}})
-	if err != nil {
-		return dgraphItem{}, err
-	}
-
-	resp, err := txn.Query(context.Background(), query)
+	resp, err := txn.Query(context.Background(), fmt.Sprintf(query, id))
 	if err != nil {
 		return dgraphItem{}, err
 	}
